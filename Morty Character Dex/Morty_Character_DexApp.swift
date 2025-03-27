@@ -11,7 +11,7 @@ import SwiftUI
 struct Morty_Character_DexApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            CharacterListView()
         }
     }
 }
