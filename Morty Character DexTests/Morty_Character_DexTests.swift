@@ -27,6 +27,7 @@ class Morty_Character_DexTests: XCTestCase {
         // Subscribe to error message updates
         var receivedErrorMessage: String?
         let cancellable = sut.$errorMessage
+            .dropFirst()
             .compactMap { $0 }
             .first()
             .sink { errorMessage in
@@ -51,7 +52,6 @@ class Morty_Character_DexTests: XCTestCase {
         
         // Create an expectation for the async error update
         let expectation = self.expectation(description: "Wait for characters to download")
-        var expectationFulfilled = false
         
         // When: Trigger the fetch
         sut.fetchCharacters(for: "rick")
@@ -59,13 +59,12 @@ class Morty_Character_DexTests: XCTestCase {
         // Subscribe to character array updates
         var receivedCharacters: [RMCharacter] = []
         let cancellable = sut.$rmCharacters
+            .dropFirst()
             .compactMap { $0 }
+            .prefix(1)
             .sink { characters in
-                if !expectationFulfilled, !characters.isEmpty {
-                    receivedCharacters = characters
-                    expectation.fulfill()
-                    expectationFulfilled = true
-                }
+                receivedCharacters = characters
+                expectation.fulfill()
             }
         
         // Simulate the API response
@@ -99,7 +98,11 @@ class Morty_Character_DexTests: XCTestCase {
             
         
         // Deallocate the ViewModel before the request completes
+        weak var weakSUT = sut
         sut = nil
+        
+        // Assert ViewModel was actually deallocated
+        XCTAssertNil(weakSUT, "ViewModel should be deallocated to confirm no retain cycle.")
         
         // Simulate the API response
         let dummyCharacters = JsonDummyData()

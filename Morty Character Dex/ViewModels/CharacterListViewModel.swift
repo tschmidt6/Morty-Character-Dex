@@ -42,17 +42,17 @@ class CharacterListViewModel: ObservableObject {
         
         characterAPIService.fetchCharacters(url: searchURL)
             .receive(on: DispatchQueue.main)  // Ensure UI updates happen on the main thread
-            .sink(receiveCompletion: { completion in
+            .sink(receiveCompletion: { [weak self] completion in
                 switch completion {
                 case .failure(let error):
-                    self.errorMessage = self.getErrorMessage(from: error)
-                    self.rmCharacters = []
+                    self?.errorMessage = self?.getErrorMessage(from: error)
+                    self?.rmCharacters = []
                 case .finished:
                     break
                 }
-            }, receiveValue: { characters in
-                self.rmCharacters = characters
-                self.isLoading = false
+            }, receiveValue: { [weak self] characters in
+                self?.rmCharacters = characters
+                self?.isLoading = false
             })
             .store(in: &cancellables)
     }
